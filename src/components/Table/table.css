@@ -1,0 +1,17 @@
+.table {
+  width: 100%;
+  margin-top: 20px;
+
+  border-collapse: collapse;
+}
+
+.table th {
+  padding-bottom: 15px;
+
+  font-weight: 400;
+}
+
+.table tbody {
+  background-color: #ffffff;
+  border: 1px solid #000000;
+}
