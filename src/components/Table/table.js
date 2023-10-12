@@ -1,27 +1,67 @@
-/* eslint-disable react/no-unknown-property */
-import { connect } from 'react-redux';
-import { editService, removeService } from '../../redux/actions/actionCreator';
+import { useDispatch, useSelector } from 'react-redux';
 import './table.css';
+import { removeService } from '../../redux/slices/listSlice';
+import { editService } from '../../redux/slices/formSlice';
 import TableRow from './TableRow/tableRow';
-import PropTypes from 'prop-types';
 
-function Table(props) {
-  const {
-    services,
-    onRemove,
-    onEdit
-  } = props;
+export default function Table() {
+  const services = useSelector(state => state.list);
+  const search = useSelector(state => state.search);
+  const dispatch = useDispatch();
+  const tableLength = 3;
 
   function handleDeleteClick(id) {
-    return onRemove(id);
+    return dispatch(removeService(id));
   }
 
   function handleEditClick(id) {
-    const index = services.findIndex((service) => service.id === id);
+    const index = services.findIndex(service => service.id === id);
     const { name, price } = services[index];
 
-    return onEdit(name, price, { state: true, index });
+    return dispatch(editService({ name, price, editingMode: { state: true, index } }));
   }
+
+  let filteredList = null;
+
+  if (search.query) {
+    filteredList = services.map(({ id, name, price }) => {
+      if (!name.startsWith(search.query)) return null;
+
+      return (
+        <TableRow
+          key={id}
+          id={id}
+          name={name}
+          price={price}
+          onDeleteClick={() => handleDeleteClick(id)}
+          onEditClick={() => handleEditClick(id)}
+        />
+      );
+    });
+
+    if (!filteredList.filter(Boolean).length) {
+      filteredList = (
+        <tr>
+          <td colSpan={tableLength}>
+            По вашему запросу ничего не найдено
+          </td>
+        </tr>
+      );
+    }
+  }
+
+  const list = services.map(({ id, name, price }) => {
+    return (
+      <TableRow
+        key={id}
+        id={id}
+        name={name}
+        price={price}
+        onDeleteClick={() => handleDeleteClick(id)}
+        onEditClick={() => handleEditClick(id)}
+      />
+    );
+  })
 
   return (
     <table className='table'>
@@ -32,43 +72,7 @@ function Table(props) {
           <th>Действия</th>
         </tr>
       </thead>
-      <tbody>
-        {services.map(service => {
-          const { id, name, price } = service;
-
-          return (
-            <TableRow
-              key={id}
-              id={id}
-              name={name}
-              price={price}
-              onDeleteClick={() => handleDeleteClick(id)}
-              onEditClick={() => handleEditClick(id)}
-            />
-          );
-        })}
-      </tbody>
+      <tbody>{filteredList || list}</tbody>
     </table>
   );
 }
-
-Table.propTypes = {
-  services: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.string,
-    name: PropTypes.string,
-    price: PropTypes.number,
-  })).isRequired,
-  onRemove: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
-}
-
-const mapStateToProps = (state) => ({
-  services: state.list,
-});
-
-const mapDispatchToProps = ({
-  onRemove: removeService,
-  onEdit: editService
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Table);

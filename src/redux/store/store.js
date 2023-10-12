@@ -1,13 +1,15 @@
 import { combineReducers, compose, legacy_createStore } from "redux";
-import formReducer from "../reducers/formReducer";
-import listReducer from "../reducers/listReducer";
+import formSlice from "../slices/formSlice";
+import listSlice from "../slices/listSlice";
+import searchSlice from "../slices/searchSlice";
 
 const reducer = combineReducers({
-  form: formReducer,
-  list: listReducer
+  form: formSlice,
+  list: listSlice,
+  search: searchSlice,
 });
 
-const ReactReduxDevTools = window.__REDUX_DEVTOOLS_EXTENSOIN__ && window.__REDUX_DEVTOOLS_EXTENSOIN__();
+const ReactReduxDevTools = window.__REDUX_DEVTOOLS_EXTENSOIN__ && window.__REDUX_DEVTOOLS_EXTENSOIN__(); 
 
 const store = legacy_createStore(
   reducer,

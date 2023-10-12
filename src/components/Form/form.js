@@ -1,22 +1,14 @@
-/* eslint-disable react/prop-types */
-import { connect } from 'react-redux';
-import { addService, addServiceChanges, changeServiceField, endServiceEditing } from '../../redux/actions/actionCreator';
+import { useDispatch, useSelector } from 'react-redux';
 import './form.css';
-import PropTypes from 'prop-types';
+import { changeServiceField, endServiceEditing } from '../../redux/slices/formSlice';
+import { addService, addServiceChange } from '../../redux/slices/listSlice';
 
-function From(props) {
-  const {
-    form,
-    onServiceSubmit,
-    onChangesSubmit,
-    onReset,
-    onChange,
-  } = props;
+export default function Form() {
+  const form = useSelector(state => state.form);
+  const dispatch = useDispatch();
 
-  function handleInputChange({ target }) {
-    const { name, value } = target;
-
-    onChange(name, value);
+  function handleInputChange( { target: { name, value } }) {
+    dispatch(changeServiceField({ name, value }));
   }
 
   return (
@@ -29,19 +21,19 @@ function From(props) {
         if (form.editingMode.state) {
           const { index } = form.editingMode;
 
-          onChangesSubmit(index, name, price);
-          onReset();
+          dispatch(addServiceChange({ index, name, price }));
+          dispatch(endServiceEditing());
         } else {
-          onServiceSubmit(name, price);
+          dispatch(addService({ name, price }));
         }
       }}
       onReset={ev => {
         ev.preventDefault();
-        
-        onReset();
+
+        dispatch(endServiceEditing());
       }}
     >
-      <div className='form-control'>
+      <div>
         <label htmlFor='name'>Услуга</label>
         <input
           className='form-control__name'
@@ -62,12 +54,11 @@ function From(props) {
           type='number'
           id='price'
           name='price'
-          required
           min='1'
           max='9999999'
+          required
           value={form.price}
           onChange={handleInputChange}
-          onFocus={({ target }) => target.select()}
         />
       </div>
       <input
@@ -78,35 +69,11 @@ function From(props) {
       {
         form.editingMode.state &&
         <input
-          className='form-control__button-reset'
+          className='form-control__button-save'
           type='reset'
           value='Отменить'
         />
       }
     </form>
-  )
+  );
 }
-
-From.propTypes = {
-  form: PropTypes.shape({
-    name: PropTypes.string,
-    price: PropTypes.number,
-  }).isRequired,
-  onServiceSubmit: PropTypes.func.isRequired,
-  onChangesSubmit: PropTypes.func.isRequired,
-  onReset: PropTypes.func.isRequired,
-  onChange: PropTypes.func.isRequired,
-}
-
-const mapStateToProps = (state) =>({
-  form: state.form,
-})
-
-const mapDispatchToProps = ({
-  onServiceSubmit: addService,
-  onChangesSubmit: addServiceChanges,
-  onReset: endServiceEditing,
-  onChange: changeServiceField,
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(From);
