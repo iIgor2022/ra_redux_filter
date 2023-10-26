@@ -24,8 +24,9 @@ export default function Table() {
   let filteredList = null;
 
   if (search.query) {
+    const regexp = new RegExp(`${search.query}`, 'i');
     filteredList = services.map(({ id, name, price }) => {
-      if (!name.startsWith(search.query)) return null;
+      if (!name.match(regexp)) return null;
 
       return (
         <TableRow
